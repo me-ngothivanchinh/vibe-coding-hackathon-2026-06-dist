@@ -30,7 +30,7 @@ export default function EditMeetingPage() {
       await updateMeeting(id, {
         title,
         body,
-        meetingDate: new Date(meetingDate).toISOString(),
+        meetingDate: `${meetingDate}T00:00:00Z`,
       })
       router.push(`/meetings/${id}`)
     } catch (err) {

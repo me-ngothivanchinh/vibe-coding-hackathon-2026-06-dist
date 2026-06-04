@@ -20,7 +20,7 @@ export default function NewMeetingPage() {
       await createMeeting({
         title,
         body,
-        meetingDate: new Date(meetingDate).toISOString(),
+        meetingDate: `${meetingDate}T00:00:00Z`,
       })
       router.push('/')
     } catch (err) {

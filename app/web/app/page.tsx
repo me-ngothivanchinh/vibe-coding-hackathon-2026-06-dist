@@ -106,8 +106,8 @@ export default function HomePage() {
               href={`/meetings/${m.id}`}
               className="flex flex-col gap-2 px-4 py-3 hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between"
             >
-              <div>
-                <div className="font-medium text-gray-900">{m.title}</div>
+              <div className="min-w-0">
+                <div className="font-medium text-gray-900 break-words">{m.title}</div>
                 {(m.tags?.length ?? 0) > 0 && (
                   <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-600">
                     {(m.tags ?? []).map((tag) => (
@@ -121,7 +121,7 @@ export default function HomePage() {
                   </div>
                 )}
               </div>
-              <span className="text-sm text-gray-500">
+              <span className="flex-shrink-0 text-sm text-gray-500">
                 {formatDate(m.meetingDate)}
               </span>
             </Link>

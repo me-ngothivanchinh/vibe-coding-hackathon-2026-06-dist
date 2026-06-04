@@ -4,6 +4,17 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createMeeting } from '@/lib/api'
 
+function normalizeTags(input: string) {
+  return Array.from(
+    new Set(
+      input
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+    )
+  )
+}
+
 export default function NewMeetingPage() {
   const router = useRouter()
   const [title, setTitle] = useState('')
@@ -22,10 +33,7 @@ export default function NewMeetingPage() {
         title,
         body,
         meetingDate: `${meetingDate}T00:00:00Z`,
-        tags: tagsInput
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter(Boolean),
+        tags: normalizeTags(tagsInput),
       })
       router.push('/')
     } catch (err) {

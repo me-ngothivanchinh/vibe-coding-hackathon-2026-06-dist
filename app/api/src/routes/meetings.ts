@@ -4,32 +4,18 @@ import { prisma } from '../lib/db'
 const router = Router()
 
 router.get('/', async (req, res) => {
-  const tag = req.query.tag as string | undefined
-
-  const meetings = await prisma.meeting.findMany({
-    where: tag ? { tags: { has: tag } } : undefined,
-    orderBy: { meetingDate: 'desc' },
-  })
-  res.json(meetings)
-})
-
-router.get('/search', async (req, res) => {
   const query = req.query.q as string | undefined
   const tag = req.query.tag as string | undefined
-
-  if ((!query || query.trim() === '') && !tag) {
-    return res.json([])
-  }
 
   const where: any = {}
   if (tag) {
     where.tags = { has: tag }
   }
 
-  if (query && query.trim() !== '') {
+  if (query?.trim()) {
     where.OR = [
-      { title: { contains: query, mode: 'insensitive' } },
-      { body: { contains: query, mode: 'insensitive' } },
+      { title: { contains: query.trim(), mode: 'insensitive' } },
+      { body: { contains: query.trim(), mode: 'insensitive' } },
     ]
   }
 

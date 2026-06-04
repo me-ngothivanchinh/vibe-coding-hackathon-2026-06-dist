@@ -1,27 +1,39 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { fetchMeetings, searchMeetings, formatDate } from '@/lib/api'
+import { fetchMeetings, formatDate } from '@/lib/api'
 import type { Meeting } from '@/lib/types'
 
 export default function HomePage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const [meetings, setMeetings] = useState<Meeting[] | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [tagFilter, setTagFilter] = useState('')
+  const [searchQuery, setSearchQuery] = useState(
+    () => searchParams.get('q') ?? ''
+  )
+  const [tagFilter, setTagFilter] = useState(
+    () => searchParams.get('tag') ?? ''
+  )
   const [error, setError] = useState<string | null>(null)
   const [isSearching, setIsSearching] = useState(false)
 
   useEffect(() => {
-    setIsSearching(true)
-    const trimmedQuery = searchQuery.trim()
-    const trimmedTag = tagFilter.trim()
-    const timer = setTimeout(() => {
-      const fetcher = trimmedQuery
-        ? searchMeetings(trimmedQuery, trimmedTag || undefined)
-        : fetchMeetings(trimmedTag || undefined)
+    const params = new URLSearchParams()
+    if (searchQuery.trim()) params.set('q', searchQuery.trim())
+    if (tagFilter.trim()) params.set('tag', tagFilter.trim())
 
-      fetcher
+    const url = `${window.location.pathname}${
+      params.toString() ? `?${params.toString()}` : ''
+    }`
+    router.replace(url, { scroll: false })
+  }, [searchQuery, tagFilter, router])
+
+  useEffect(() => {
+    setIsSearching(true)
+    const timer = setTimeout(() => {
+      fetchMeetings(searchQuery.trim() || undefined, tagFilter.trim() || undefined)
         .then(setMeetings)
         .catch((e) => setError(e.message))
         .finally(() => setIsSearching(false))
@@ -41,7 +53,7 @@ export default function HomePage() {
       <div className="mb-4 grid gap-2 md:grid-cols-[1fr_auto]">
         <div className="flex gap-2">
           <input
-            type="text"
+            type="search"
             placeholder="Search meetings by title or content..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -94,8 +106,10 @@ export default function HomePage() {
 
       {meetings.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
-          {hasSearchQuery || hasTagFilter
-            ? 'No meetings found.'
+          {hasSearchQuery
+            ? 'No meetings match this search.'
+            : hasTagFilter
+            ? 'No meetings match this filter.'
             : 'No meetings yet. Create one to get started.'}
         </div>
       ) : (

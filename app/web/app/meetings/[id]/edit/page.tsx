@@ -4,6 +4,17 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { fetchMeeting, updateMeeting } from '@/lib/api'
 
+function normalizeTags(input: string) {
+  return Array.from(
+    new Set(
+      input
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+    )
+  )
+}
+
 export default function EditMeetingPage() {
   const router = useRouter()
   const params = useParams()
@@ -20,7 +31,7 @@ export default function EditMeetingPage() {
       setTitle(m.title)
       setBody(m.body)
       setMeetingDate(m.meetingDate.slice(0, 10))
-      setTagsInput(m.tags.join(', '))
+      setTagsInput((m.tags ?? []).join(', '))
       setLoaded(true)
     })
   }, [id])
@@ -33,10 +44,7 @@ export default function EditMeetingPage() {
         title,
         body,
         meetingDate: `${meetingDate}T00:00:00Z`,
-        tags: tagsInput
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter(Boolean),
+        tags: normalizeTags(tagsInput),
       })
       router.push(`/meetings/${id}`)
     } catch (err) {

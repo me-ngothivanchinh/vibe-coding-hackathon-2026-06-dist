@@ -2,29 +2,20 @@ import type { Meeting } from './types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
 
-export async function fetchMeetings(tag?: string): Promise<Meeting[]> {
+export async function fetchMeetings(
+  query?: string,
+  tag?: string
+): Promise<Meeting[]> {
   const url = new URL(`${API_URL}/api/meetings`)
-  if (tag) {
-    url.searchParams.set('tag', tag)
+  if (query?.trim()) {
+    url.searchParams.set('q', query.trim())
+  }
+  if (tag?.trim()) {
+    url.searchParams.set('tag', tag.trim())
   }
 
   const res = await fetch(url.toString(), { cache: 'no-store' })
   if (!res.ok) throw new Error('Failed to fetch meetings')
-  return res.json()
-}
-
-export async function searchMeetings(
-  query: string,
-  tag?: string
-): Promise<Meeting[]> {
-  const url = new URL(`${API_URL}/api/meetings/search`)
-  url.searchParams.set('q', query)
-  if (tag) {
-    url.searchParams.set('tag', tag)
-  }
-
-  const res = await fetch(url.toString(), { cache: 'no-store' })
-  if (!res.ok) throw new Error('Failed to search meetings')
   return res.json()
 }
 
@@ -51,7 +42,7 @@ export async function createMeeting(data: {
 
 export async function updateMeeting(
   id: string,
-  data: { title: string; body: string; meetingDate: string }
+  data: { title: string; body: string; meetingDate: string; tags: string[] }
 ): Promise<Meeting> {
   const res = await fetch(`${API_URL}/api/meetings/${id}`, {
     method: 'PUT',
@@ -69,10 +60,18 @@ export async function deleteMeeting(id: string): Promise<void> {
   if (!res.ok) throw new Error('Failed to delete meeting')
 }
 
+const tokyoFormatter = new Intl.DateTimeFormat('ja-JP', {
+  timeZone: 'Asia/Tokyo',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
 export function formatDate(isoString: string): string {
   const date = new Date(isoString)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
+  const parts = tokyoFormatter.formatToParts(date)
+  const year = parts.find((part) => part.type === 'year')?.value ?? ''
+  const month = parts.find((part) => part.type === 'month')?.value ?? ''
+  const day = parts.find((part) => part.type === 'day')?.value ?? ''
   return `${year}-${month}-${day}`
 }

@@ -2,9 +2,29 @@ import type { Meeting } from './types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
 
-export async function fetchMeetings(): Promise<Meeting[]> {
-  const res = await fetch(`${API_URL}/api/meetings`, { cache: 'no-store' })
+export async function fetchMeetings(tag?: string): Promise<Meeting[]> {
+  const url = new URL(`${API_URL}/api/meetings`)
+  if (tag) {
+    url.searchParams.set('tag', tag)
+  }
+
+  const res = await fetch(url.toString(), { cache: 'no-store' })
   if (!res.ok) throw new Error('Failed to fetch meetings')
+  return res.json()
+}
+
+export async function searchMeetings(
+  query: string,
+  tag?: string
+): Promise<Meeting[]> {
+  const url = new URL(`${API_URL}/api/meetings/search`)
+  url.searchParams.set('q', query)
+  if (tag) {
+    url.searchParams.set('tag', tag)
+  }
+
+  const res = await fetch(url.toString(), { cache: 'no-store' })
+  if (!res.ok) throw new Error('Failed to search meetings')
   return res.json()
 }
 
@@ -14,19 +34,11 @@ export async function fetchMeeting(id: string): Promise<Meeting> {
   return res.json()
 }
 
-export async function searchMeetings(query: string): Promise<Meeting[]> {
-  const res = await fetch(
-    `${API_URL}/api/meetings/search?q=${encodeURIComponent(query)}`,
-    { cache: 'no-store' }
-  )
-  if (!res.ok) throw new Error('Failed to search meetings')
-  return res.json()
-}
-
 export async function createMeeting(data: {
   title: string
   body: string
   meetingDate: string
+  tags: string[]
 }): Promise<Meeting> {
   const res = await fetch(`${API_URL}/api/meetings`, {
     method: 'POST',

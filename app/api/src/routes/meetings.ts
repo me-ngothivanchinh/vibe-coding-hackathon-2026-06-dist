@@ -3,8 +3,11 @@ import { prisma } from '../lib/db'
 
 const router = Router()
 
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
+  const tag = req.query.tag as string | undefined
+
   const meetings = await prisma.meeting.findMany({
+    where: tag ? { tags: { has: tag } } : undefined,
     orderBy: { meetingDate: 'desc' },
   })
   res.json(meetings)
@@ -12,18 +15,26 @@ router.get('/', async (_req, res) => {
 
 router.get('/search', async (req, res) => {
   const query = req.query.q as string | undefined
-  
-  if (!query || query.trim() === '') {
+  const tag = req.query.tag as string | undefined
+
+  if ((!query || query.trim() === '') && !tag) {
     return res.json([])
   }
 
+  const where: any = {}
+  if (tag) {
+    where.tags = { has: tag }
+  }
+
+  if (query && query.trim() !== '') {
+    where.OR = [
+      { title: { contains: query, mode: 'insensitive' } },
+      { body: { contains: query, mode: 'insensitive' } },
+    ]
+  }
+
   const meetings = await prisma.meeting.findMany({
-    where: {
-      OR: [
-        { title: { contains: query, mode: 'insensitive' } },
-        { body: { contains: query, mode: 'insensitive' } },
-      ],
-    },
+    where,
     orderBy: { meetingDate: 'desc' },
   })
   res.json(meetings)
@@ -41,25 +52,27 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   // TODO: validate input
-  const { title, body, meetingDate } = req.body
+  const { title, body, meetingDate, tags } = req.body
   const meeting = await prisma.meeting.create({
     data: {
       title,
       body,
       meetingDate: new Date(meetingDate),
+      tags: Array.isArray(tags) ? tags : [],
     },
   })
   res.status(201).json(meeting)
 })
 
 router.put('/:id', async (req, res) => {
-  const { title, body, meetingDate } = req.body
+  const { title, body, meetingDate, tags } = req.body
   const meeting = await prisma.meeting.update({
     where: { id: req.params.id },
     data: {
       title,
       body,
       meetingDate: meetingDate ? new Date(meetingDate) : undefined,
+      tags: Array.isArray(tags) ? tags : undefined,
     },
   })
   res.json(meeting)

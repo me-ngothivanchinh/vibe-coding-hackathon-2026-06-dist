@@ -11,6 +11,7 @@ export default function EditMeetingPage() {
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [meetingDate, setMeetingDate] = useState('')
+  const [tagsInput, setTagsInput] = useState('')
   const [loaded, setLoaded] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -19,6 +20,7 @@ export default function EditMeetingPage() {
       setTitle(m.title)
       setBody(m.body)
       setMeetingDate(m.meetingDate.slice(0, 10))
+      setTagsInput(m.tags.join(', '))
       setLoaded(true)
     })
   }, [id])
@@ -31,6 +33,10 @@ export default function EditMeetingPage() {
         title,
         body,
         meetingDate: `${meetingDate}T00:00:00Z`,
+        tags: tagsInput
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter(Boolean),
       })
       router.push(`/meetings/${id}`)
     } catch (err) {
@@ -64,6 +70,19 @@ export default function EditMeetingPage() {
           onChange={(e) => setMeetingDate(e.target.value)}
           className="border rounded px-3 py-2"
         />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Tags</label>
+        <input
+          type="text"
+          placeholder="e.g. acme, onboarding"
+          value={tagsInput}
+          onChange={(e) => setTagsInput(e.target.value)}
+          className="w-full border rounded px-3 py-2"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Separate tags with commas.
+        </p>
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Notes</label>

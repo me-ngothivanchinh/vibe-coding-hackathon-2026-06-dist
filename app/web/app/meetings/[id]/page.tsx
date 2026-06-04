@@ -37,7 +37,21 @@ export default function MeetingDetailPage() {
   return (
     <div className="bg-white rounded shadow p-6">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">{meeting.title}</h1>
+        <div>
+          <h1 className="text-2xl font-semibold">{meeting.title}</h1>
+          {meeting.tags.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2 text-sm text-gray-600">
+              {meeting.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-gray-200 bg-gray-50 px-2 py-1"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="flex gap-2">
           <Link
             href={`/meetings/${id}/edit`}

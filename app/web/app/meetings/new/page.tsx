@@ -11,6 +11,7 @@ export default function NewMeetingPage() {
   const [meetingDate, setMeetingDate] = useState(
     new Date().toISOString().slice(0, 10)
   )
+  const [tagsInput, setTagsInput] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -21,6 +22,10 @@ export default function NewMeetingPage() {
         title,
         body,
         meetingDate: `${meetingDate}T00:00:00Z`,
+        tags: tagsInput
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter(Boolean),
       })
       router.push('/')
     } catch (err) {
@@ -52,6 +57,19 @@ export default function NewMeetingPage() {
           onChange={(e) => setMeetingDate(e.target.value)}
           className="border rounded px-3 py-2"
         />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Tags</label>
+        <input
+          type="text"
+          placeholder="e.g. acme, onboarding"
+          value={tagsInput}
+          onChange={(e) => setTagsInput(e.target.value)}
+          className="w-full border rounded px-3 py-2"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Separate tags with commas.
+        </p>
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Notes</label>

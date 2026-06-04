@@ -10,6 +10,25 @@ router.get('/', async (_req, res) => {
   res.json(meetings)
 })
 
+router.get('/search', async (req, res) => {
+  const query = req.query.q as string | undefined
+  
+  if (!query || query.trim() === '') {
+    return res.json([])
+  }
+
+  const meetings = await prisma.meeting.findMany({
+    where: {
+      OR: [
+        { title: { contains: query, mode: 'insensitive' } },
+        { body: { contains: query, mode: 'insensitive' } },
+      ],
+    },
+    orderBy: { meetingDate: 'desc' },
+  })
+  res.json(meetings)
+})
+
 router.get('/:id', async (req, res) => {
   const meeting = await prisma.meeting.findUnique({
     where: { id: req.params.id },

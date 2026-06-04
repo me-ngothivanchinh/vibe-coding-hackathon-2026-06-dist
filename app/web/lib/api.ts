@@ -14,6 +14,15 @@ export async function fetchMeeting(id: string): Promise<Meeting> {
   return res.json()
 }
 
+export async function searchMeetings(query: string): Promise<Meeting[]> {
+  const res = await fetch(
+    `${API_URL}/api/meetings/search?q=${encodeURIComponent(query)}`,
+    { cache: 'no-store' }
+  )
+  if (!res.ok) throw new Error('Failed to search meetings')
+  return res.json()
+}
+
 export async function createMeeting(data: {
   title: string
   body: string
